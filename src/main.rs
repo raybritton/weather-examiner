@@ -3,15 +3,24 @@ use clap::{App, Arg, crate_description, crate_authors, crate_name, crate_version
 use simplelog::{SimpleLogger, ConfigBuilder};
 use log::{LevelFilter, error};
 use crate::app::WeatherApp;
+use crate::db_manager::DbManager;
+use crate::ui::Ui;
+
+pub type Error = Box<dyn std::error::Error>;
 
 mod app;
+mod db_manager;
+mod models;
+mod templates;
+mod ui;
+mod extensions;
 
 const APP_INFO: AppInfo = AppInfo {
-    name:  "Weather",
-    author: "Ray Britton"
+    name: "Weather",
+    author: "Ray Britton",
 };
 
-fn main() {
+fn main() -> Result<(), Error> {
     let matches = App::new(crate_name!())
         .author(crate_authors!())
         .version(crate_version!())
@@ -24,39 +33,69 @@ fn main() {
             .multiple(false)
             .number_of_values(1)
             .help("Weather database file to use\nFile will be created if it doesn't exist\nIf not set this program will automatically generate one in the users data directory"))
+        .arg(Arg::with_name("verbose")
+            .takes_value(false)
+            .short("v")
+            .long("verbose")
+            .help("Set verbosity of program (between 0 and 3)")
+            .required(false)
+            .multiple(true))
         .get_matches();
+
+    let verbosity = matches.occurrences_of("verbose");
 
     let config = ConfigBuilder::new()
         .set_thread_level(LevelFilter::Off)
         .set_target_level(LevelFilter::Off)
-        .set_location_level(LevelFilter::Trace)
+        .set_location_level(LevelFilter::Error)
         .build();
 
-    if let Err(err) = SimpleLogger::init(LevelFilter::Error, config) {
+    let log_level = int_to_log_level(verbosity);
+
+    if let Err(err) = SimpleLogger::init(log_level, config) {
         eprintln!("Logger failed to initialise\nNo other errors will be printed\n{}", err);
     }
 
     let db_file = if matches.is_present("db") {
         matches.value_of("db").unwrap().to_owned()
     } else {
-        match app_root(AppDataType::SharedData, &APP_INFO) {
+        match app_root(AppDataType::UserData, &APP_INFO) {
             Ok(path) => {
                 match path.to_str() {
                     None => {
-                        error!("Unfortunately the shared data dir path contains invalid UTF-8\nTry setting a specific path with --database <PATH>");
-                        return;
-                    },
-                    Some(data_dir) => data_dir.to_owned()
+                        error!("Unfortunately the user data dir path contains invalid UTF-8\nTry setting a specific path with --database <PATH>");
+                        std::process::exit(1);
+                    }
+                    Some(data_dir) => format!("{}/weather.db", data_dir.to_owned())
                 }
-            },
+            }
             Err(err) => {
-                error!("Unable to access shared data dir: {}", err);
+                error!("Unable to access user data dir: {}", err);
                 error!("Try setting a specific path with --database <PATH>");
-                return;
-            },
+                std::process::exit(1);
+            }
         }
     };
 
-    let app = WeatherApp::new(db_file);
-    app.run();
+    let mut db_manager = DbManager::new(db_file)?;
+
+    db_manager.init()?;
+
+    let app = WeatherApp::new(db_manager);
+
+    let mut ui = Ui::new(app);
+
+    ui.run()?;
+
+    Ok(())
 }
+
+fn int_to_log_level(count: u64) -> log::LevelFilter {
+    return match count.min(3) {
+        1 => log::LevelFilter::Info,
+        2 => log::LevelFilter::Debug,
+        3 => log::LevelFilter::Trace,
+        _ => log::LevelFilter::Error
+    };
+}
+
