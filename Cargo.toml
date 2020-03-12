@@ -1,6 +1,6 @@
 [package]
 name = "weather"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Ray Britton <raybritton@gmail.com>"]
 edition = "2018"
 publish = false
@@ -13,7 +13,7 @@ description = "Program to examine weather data to check for prediction reliabili
 clap = "2.33.0"
 serde = {version = "1.0.104", features = ["derive"] }
 serde_json = "1.0.48"
-rusqlite = "0.21.0"
+rusqlite = { version = "0.21.0", features = ["bundled"] }
 lazy_static = "1.4.0"
 app_dirs2 = "2.0.4"
 log = "0.4.8"
