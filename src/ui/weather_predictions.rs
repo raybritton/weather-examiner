@@ -10,6 +10,7 @@ use std::convert::TryInto;
 use chrono::{NaiveDateTime, Datelike, Timelike};
 use crate::extensions::{Utils, MapToUnit};
 use std::any::Any;
+use std::time::Duration;
 
 const HEADER_COLOR: Color = Color::Cyan;
 
@@ -105,6 +106,8 @@ impl UiSection for WeatherPredictions {
         loop {
             if selected_date < first.date() || selected_date > last.date() {
                 print_styled("Outside of data range", Color::Red, false)?;
+
+                std::thread::sleep(Duration::from_millis(500));
 
                 self.wait_for_char("\n\nPress any key to continue\n")?;
 

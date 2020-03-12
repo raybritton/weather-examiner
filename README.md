@@ -5,6 +5,8 @@
 
 This probably isn't useful for anyone but me. You'll need to load dark sky weather readings (current + hourly) to be able to use this.
 
+![Weather predictions](.github/weather_predictions.png "Weather predictions")
+
 
 ###  License
 
