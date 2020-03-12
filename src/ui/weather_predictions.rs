@@ -150,7 +150,7 @@ impl UiSection for WeatherPredictions {
                 WeatherPredictions::print_type_row(&types, 24, 24)?;
 
                 stdout()
-                    .execute(Print("\n\n(◄) Previous slot\n(►) Next slot\n(▲) Previous day\n(▼) Next day\n(esc) Go back"))?;
+                    .execute(Print("\n\n(◄) Previous hour\n(►) Next hour\n(▲) Previous day\n(▼) Next day\n(esc) Go back"))?;
 
                 loop {
                     let char = self.wait_for_char_no_delay()?;
