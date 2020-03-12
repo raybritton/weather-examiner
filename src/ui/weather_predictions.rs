@@ -5,7 +5,7 @@ use crossterm::{ExecutableCommand, QueueableCommand};
 use crossterm::style::{SetForegroundColor, Print, Color, SetAttribute, Attribute, SetBackgroundColor};
 use crossterm::event::KeyCode;
 use crate::ui::ui_section::UiSection;
-use crate::ui::utils::{print_styled, print_first_last_reading};
+use crate::ui::utils::{print_styled, print_first_last_reading, print_styled_list};
 use std::convert::TryInto;
 use chrono::{NaiveDateTime, Datelike, Timelike};
 use crate::extensions::{Utils, MapToUnit};
@@ -32,7 +32,7 @@ impl WeatherPredictions {
         S: Fn(&D) -> Result<(), Error>
     {
         print_styled(&format!("\n{}", title), HEADER_COLOR, false)?;
-        print_styled2(data, formatter, styler)?;
+        print_styled_list(data, formatter, styler)?;
 
         Ok(())
     }
@@ -119,11 +119,10 @@ impl UiSection for WeatherPredictions {
 
                 print_styled(&format!("{} {: >3} {: >2}\n", selected_date.year(), selected_date.ordinal(), selected_date.hour()), Color::White, true)?;
 
-                (1..10).fold(String::new(), |acc, num| format!("{}{: <2}    ", acc, num));
                 let titles = (1..=23).map(|num| format!("{: <2}    ", num)).collect::<Vec<String>>().join("");
                 let titles2 = (24..=47).map(|num| format!("{: <2}    ", num)).collect::<Vec<String>>().join("");
 
-                                let mut temps: Vec<f64> = reading.1.iter().map(|p| p.temp).collect();
+                let mut temps: Vec<f64> = reading.1.iter().map(|p| p.temp).collect();
                 temps.insert(0, reading.0.temp);
 
                 let mut probs: Vec<usize> = reading.1.iter().map(|p| (p.precip_probability * 100.) as usize).collect();
@@ -177,22 +176,4 @@ impl UiSection for WeatherPredictions {
             }
         }
     }
-}
-
-fn print_styled2<D, F, S>(text: Vec<D>, formatter: F, styler: S) -> Result<(), Error> where
-    D: Any,
-    F: Fn(D) -> String,
-    S: Fn(&D) -> Result<(), Error>
-{
-    text.into_iter()
-        .try_for_each(|item| {
-            styler(&item)?;
-            stdout()
-                .execute(Print(formatter(item)))?
-                .execute(SetAttribute(Attribute::NormalIntensity))?
-                .execute(SetForegroundColor(Color::White))?
-                .execute(SetBackgroundColor(Color::Black))
-                .map_err(|e| Error::from(e))
-                .map_to_unit()
-        })
 }

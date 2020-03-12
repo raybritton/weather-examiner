@@ -1,10 +1,12 @@
-use crossterm::style::{Color, SetAttribute, SetForegroundColor, Print, Attribute};
+use crossterm::style::{Color, SetAttribute, SetForegroundColor, Print, Attribute, SetBackgroundColor};
 use std::io::stdout;
 use crate::Error;
 use crossterm::ExecutableCommand;
 use crate::models::Weather;
 use crate::app::WeatherApp;
 use std::time::Duration;
+use crate::extensions::MapToUnit;
+use std::any::Any;
 
 pub fn print_styled(msg: &str, color: Color, bold: bool) -> Result<(), Error> {
     if bold {
@@ -16,6 +18,24 @@ pub fn print_styled(msg: &str, color: Color, bold: bool) -> Result<(), Error> {
         .execute(SetForegroundColor(Color::White))?;
 
     Ok(())
+}
+
+pub fn print_styled_list<D, F, S>(text: Vec<D>, formatter: F, styler: S) -> Result<(), Error> where
+    D: Any,
+    F: Fn(D) -> String,
+    S: Fn(&D) -> Result<(), Error>
+{
+    text.into_iter()
+        .try_for_each(|item| {
+            styler(&item)?;
+            stdout()
+                .execute(Print(formatter(item)))?
+                .execute(SetAttribute(Attribute::NormalIntensity))?
+                .execute(SetForegroundColor(Color::White))?
+                .execute(SetBackgroundColor(Color::Black))
+                .map_err(|e| Error::from(e))
+                .map_to_unit()
+        })
 }
 
 pub fn print_first_last_reading(msg: &str, app: &mut WeatherApp) -> Result<(Weather, Weather), Error> {
