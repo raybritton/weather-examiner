@@ -92,6 +92,24 @@ impl WeatherPredictions {
             |_| Ok(()),
         )
     }
+
+    fn print_gust_row(data: &Vec<f64>, skip: usize, take: usize) -> Result<(), Error> {
+        WeatherPredictions::print_row(
+            "Wnd Gst ",
+            data.iter().skip(skip).take(take).cloned().collect(),
+            |val| format!("{: <3.0}   ", val),
+            |_| Ok(()),
+        )
+    }
+
+    fn print_speed_row(data: &Vec<f64>, skip: usize, take: usize) -> Result<(), Error> {
+        WeatherPredictions::print_row(
+            "Wnd Spd ",
+            data.iter().skip(skip).take(take).cloned().collect(),
+            |val| format!("{: <3.0}   ", val),
+            |_| Ok(()),
+        )
+    }
 }
 
 impl UiSection for WeatherPredictions {
@@ -105,7 +123,7 @@ impl UiSection for WeatherPredictions {
 
         loop {
             if selected_date < first.date() || selected_date > last.date() {
-                print_styled("Outside of data range", Color::Red, false)?;
+                print_styled("\n\nOutside of data range\n\n", Color::Red, false)?;
 
                 std::thread::sleep(Duration::from_millis(500));
 
@@ -120,7 +138,7 @@ impl UiSection for WeatherPredictions {
                 stdout()
                     .execute(Print("\nViewing  "))?;
 
-                print_styled(&format!("{} {: >3} {: >2}\n", selected_date.year(), selected_date.ordinal(), selected_date.hour()), Color::White, true)?;
+                print_styled(&format!("{}", selected_date.format("%a %Y-%m-%d %H:00")), Color::White, true)?;
 
                 let titles = (1..=23).map(|num| format!("{: <2}    ", num)).collect::<Vec<String>>().join("");
                 let titles2 = (24..=47).map(|num| format!("{: <2}    ", num)).collect::<Vec<String>>().join("");
@@ -137,20 +155,29 @@ impl UiSection for WeatherPredictions {
                 let mut types: Vec<String> = reading.1.iter().map(|p| p.precip_type.as_ref().unwrap_or(&String::from("-")).clone()).collect();
                 types.insert(0, reading.0.precip_type.as_ref().unwrap_or(&String::from("-")).clone());
 
-                print_styled(&format!("\n        Time  {}", titles), HEADER_COLOR, false)?;
+                let mut speeds: Vec<f64> = reading.1.iter().map(|p| p.wind_speed).collect();
+                speeds.insert(0, reading.0.wind_speed);
+
+                let mut gusts: Vec<f64> = reading.1.iter().map(|p| p.wind_gust).collect();
+                gusts.insert(0, reading.0.wind_gust);
+
+                print_styled(&format!("\n\n        Time  {}", titles), HEADER_COLOR, false)?;
                 WeatherPredictions::print_temp_row(&temps, 0, 24)?;
                 WeatherPredictions::print_prob_row(&probs, 0, 24)?;
                 WeatherPredictions::print_amt_row(&amts, 0, 24)?;
                 WeatherPredictions::print_type_row(&types, 0, 24)?;
+                WeatherPredictions::print_speed_row(&speeds, 0, 24)?;
+                WeatherPredictions::print_gust_row(&gusts, 0, 24)?;
 
                 print_styled(&format!("\n\n        {}", titles2), HEADER_COLOR, false)?;
                 WeatherPredictions::print_temp_row(&temps, 24, 24)?;
                 WeatherPredictions::print_prob_row(&probs, 24, 24)?;
                 WeatherPredictions::print_amt_row(&amts, 24, 24)?;
                 WeatherPredictions::print_type_row(&types, 24, 24)?;
+                WeatherPredictions::print_speed_row(&speeds, 24, 24)?;
+                WeatherPredictions::print_gust_row(&gusts, 24, 24)?;
 
-                stdout()
-                    .execute(Print("\n\n(◄) Previous hour\n(►) Next hour\n(▲) Previous day\n(▼) Next day\n(esc) Go back"))?;
+                print_styled("\n\n(◄) Previous hour\n(►) Next hour\n(▲) Previous day\n(▼) Next day\n(esc) Go back", Color::Grey, false)?;
 
                 loop {
                     let char = self.wait_for_char_no_delay()?;
