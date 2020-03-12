@@ -6,8 +6,7 @@ use rusqlite::types::ToSqlOutput;
 use std::fmt::Display;
 use serde::export::Formatter;
 use std::fmt;
-use chrono::{NaiveDateTime, Datelike, Timelike};
-use std::convert::TryInto;
+use chrono::NaiveDateTime;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Weather {
@@ -87,37 +86,29 @@ impl Prediction {
 
 impl Weather {
     pub fn simple_date(&self) -> SimpleDate {
-        return SimpleDate::new(self.year, self.day, self.hour);
+        SimpleDate::new(self.year, self.day, self.hour)
     }
 
     pub fn date(&self) -> NaiveDateTime {
-        return self.simple_date().try_into().expect("Failed to parse date");
+        self.simple_date().into()
     }
 }
 
 impl Prediction {
     pub fn simple_reading_date(&self) -> SimpleDate {
-        return SimpleDate::new(self.reading_year, self.reading_day, self.reading_hour);
+        SimpleDate::new(self.reading_year, self.reading_day, self.reading_hour)
     }
 
     pub fn simple_prediction_date(&self) -> SimpleDate {
-        return SimpleDate::new(self.prediction_year, self.prediction_day, self.prediction_hour);
+        SimpleDate::new(self.prediction_year, self.prediction_day, self.prediction_hour)
     }
 
     pub fn reading_date(&self) -> NaiveDateTime {
-        NaiveDateTime::from_timestamp(0, 0)
-            .with_year(self.reading_year as i32).expect("Bad year")
-            .with_ordinal0(self.reading_day as u32).expect("Bad day")
-            .with_hour(self.reading_hour as u32).expect("Bad hour")
-            .to_owned()
+        self.simple_reading_date().into()
     }
 
     pub fn prediction_date(&self) -> NaiveDateTime {
-        NaiveDateTime::from_timestamp(0, 0)
-            .with_year(self.prediction_year as i32).expect("Bad year")
-            .with_ordinal0(self.prediction_day as u32).expect("Bad day")
-            .with_hour(self.prediction_hour as u32).expect("Bad hour")
-            .to_owned()
+        self.simple_prediction_date().into()
     }
 }
 
@@ -267,12 +258,19 @@ pub struct WeatherReading {
 
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct SimpleDate {
+    /// Four digit year (e.g. 2020)
     pub year: u16,
+    /// Day of year, one based (i.e. first day is 1)
     pub day: u16,
+    /// Hour of day, zero based, 24 hour (i.e. first hour is 0 and last is 23)
     pub hour: u8
 }
 
 impl SimpleDate {
+    /// # Params
+    /// Year: Four digit year (e.g. 2020)
+    /// Day: Day of year, one based (i.e. first day is 1)
+    /// Hour: our of day, zero based, 24 hour (i.e. first hour is 0 and last is 23)
     pub fn new(year: u16, day: u16, hour: u8) -> SimpleDate {
         return SimpleDate {
             year,

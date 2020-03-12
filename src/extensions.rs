@@ -21,7 +21,21 @@ impl From<SimpleDate> for NaiveDateTime {
     fn from(value: SimpleDate) -> Self {
         NaiveDateTime::from_timestamp(0, 0)
             .with_year(value.year as i32).expect("Bad year")
-            .with_ordinal0(value.day as u32).expect("Bad day")
+            .with_ordinal(value.day as u32).expect("Bad day")
             .with_hour(value.hour as u32).expect("Bad hour")
+    }
+}
+
+fn unit() {
+    return ();
+}
+
+pub trait MapToUnit <E> {
+    fn map_to_unit(self) -> Result<(), E>;
+}
+
+impl <U,E> MapToUnit<E> for Result<U, E> {
+    fn map_to_unit(self) -> Result<(), E> {
+        return self.map(|_| unit());
     }
 }

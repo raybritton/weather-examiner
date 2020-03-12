@@ -64,7 +64,7 @@ impl From<DarkSkyWeather> for Weather {
     fn from(weather: DarkSkyWeather) -> Self {
         let datetime = NaiveDateTime::from_timestamp(weather.time as i64, 0);
         let year = datetime.year() as u16;
-        let day = datetime.ordinal0() as u16;
+        let day = datetime.ordinal() as u16;
         let hour = datetime.hour() as u8;
         let id = format!("{}-{:0>3}-{:0>2}", year, day, hour);
         return Weather::new(
@@ -88,7 +88,7 @@ impl From<&DarkSkyWeather> for Weather {
     fn from(weather: &DarkSkyWeather) -> Self {
         let datetime = NaiveDateTime::from_timestamp(weather.time as i64, 0);
         let year = datetime.year() as u16;
-        let day = datetime.ordinal0() as u16;
+        let day = datetime.ordinal() as u16;
         let hour = datetime.hour() as u8;
         let id = format!("{}-{}-{}", year, day, hour);
         return Weather::new(

@@ -1,9 +1,8 @@
 use crate::Error;
-use std::io::{stdout, stdin};
+use std::io::{stdout, stdin, Write};
 use crossterm::style::Print;
-use crossterm::ExecutableCommand;
+use crossterm::{ExecutableCommand, QueueableCommand, cursor};
 use crossterm::event::KeyCode;
-use std::time::Duration;
 use crossterm::event::Event::Key;
 use crate::app::WeatherApp;
 use log::error;
@@ -11,6 +10,7 @@ use crossterm::cursor::MoveTo;
 use crossterm::terminal::{Clear, ClearType};
 use crate::models::SimpleDate;
 use crate::ui::utils::consume_all_input;
+use crate::extensions::MapToUnit;
 
 pub trait UiSection {
     fn run(&mut self, app: &mut WeatherApp) -> Result<(), Error>;
@@ -25,6 +25,7 @@ pub trait UiSection {
     ///
     fn read_input(&self, message: &str) -> Result<String, Error> {
         stdout()
+            .execute(cursor::Show)?
             .execute(Print(message))?;
         let mut input = String::new();
         while input.trim().is_empty() {
@@ -33,6 +34,8 @@ pub trait UiSection {
                 std::process::exit(1);
             }
         }
+        stdout()
+            .execute(cursor::Hide)?;
         return Ok(input.trim().to_owned());
     }
 
@@ -46,7 +49,7 @@ pub trait UiSection {
     /// KeyCode of key pressed
     ///
     fn wait_for_char(&self, message: &str) -> Result<KeyCode, Error> {
-        std::thread::sleep(Duration::from_millis(300));
+        consume_all_input()?;
         stdout()
             .execute(Print(message))?;
         crossterm::terminal::enable_raw_mode()?;
@@ -69,6 +72,7 @@ pub trait UiSection {
     /// KeyCode of key pressed
     ///
     fn wait_for_char_no_delay(&self) -> Result<KeyCode, Error> {
+        consume_all_input()?;
         crossterm::terminal::enable_raw_mode()?;
         loop {
             let result = crossterm::event::read()?;
@@ -81,6 +85,10 @@ pub trait UiSection {
 
     /// Move cursor back to reset pos and clear all lines below
     ///
+    /// # Errors
+    /// Unable to move cursor
+    /// Unable to clear screen
+    ///
     fn reset(&self, reset_pos: (u16, u16)) -> Result<(), Error> {
         stdout()
             .execute(MoveTo(reset_pos.0, reset_pos.1))?
@@ -90,11 +98,58 @@ pub trait UiSection {
 
     fn input_year_day_hour(&mut self) -> Result<SimpleDate, Error> {
         consume_all_input()?;
+        stdout()
+            .execute(cursor::Show)?;
 
         let year = self.read_input("\n\nEnter year\n")?.parse()?;
         let day = self.read_input("\n\nEnter day\n")?.parse()?;
         let hour = self.read_input("\n\nEnter hour\n")?.parse()?;
 
+        stdout()
+            .execute(cursor::Hide)?;
+
         Ok(SimpleDate::new(year, day, hour))
+    }
+
+    /// Show a menu of options
+    ///
+    /// If exit is true then a final option of 'Exit' will be added
+    ///
+    /// # Errors
+    /// Unable to print text
+    /// Unable to read event
+    ///
+    /// # Returns
+    /// 0 - exit (if enabled)
+    /// 1 - 9 for selected option
+    ///
+    fn menu(&mut self, options: Vec<&str>, exit: bool) -> Result<usize, Error> {
+        options.iter()
+            .enumerate()
+            .try_for_each(|(i, option)|
+                stdout()
+                    .queue(Print(format!("{}) {}\n", i + 1, option)))
+                    .map_to_unit()
+            )?;
+
+        if exit {
+            stdout().queue(Print("\nesc) Exit\n"))?;
+        }
+
+        stdout().flush()?;
+
+        loop {
+            let input = self.wait_for_char("")?;
+
+            if input == KeyCode::Esc {
+                return Ok(0);
+            } else if let KeyCode::Char(chr) = input {
+                if let Some(num) = chr.to_digit(10).map(|num| num as usize) {
+                    if num <= options.len() {
+                        return Ok(num);
+                    }
+                }
+            }
+        }
     }
 }

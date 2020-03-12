@@ -39,14 +39,14 @@ impl UiSection for WeatherPredictions {
 
                 return Ok(());
             } else {
-                let reading = app.get_reading_with_predictions(selected_date.year() as u16, selected_date.ordinal0() as u16, selected_date.hour() as u8)?;
+                let reading = app.get_reading_with_predictions(selected_date.year() as u16, selected_date.ordinal() as u16, selected_date.hour() as u8)?;
 
                 self.reset(self.reset_pos)?;
 
                 stdout()
                     .execute(Print("\nViewing  "))?;
 
-                print_styled(&format!("{} {: >3} {: >2}\n", selected_date.year(), selected_date.ordinal0(), selected_date.hour()), Color::White, true)?;
+                print_styled(&format!("{} {: >3} {: >2}\n", selected_date.year(), selected_date.ordinal(), selected_date.hour()), Color::White, true)?;
 
                 let titles = (1..=23).map(|num| format!("{: <2}    ", num)).collect::<Vec<String>>().join("");
                 let titles2 = (24..=47).map(|num| format!("{: <2}    ", num)).collect::<Vec<String>>().join("");

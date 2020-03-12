@@ -2,10 +2,10 @@ use crate::ui::ui_section::UiSection;
 use crate::app::WeatherApp;
 use crate::Error;
 use std::io::stdout;
-use crossterm::style::{SetForegroundColor, Color, Print};
+use crossterm::style::{Color, Print};
 use crossterm::ExecutableCommand;
 use chrono::{NaiveDateTime, Datelike, Timelike};
-use crate::ui::utils::print_first_last_reading;
+use crate::ui::utils::{print_first_last_reading, print_styled};
 use std::convert::TryInto;
 
 pub struct WeatherView {
@@ -29,13 +29,10 @@ impl UiSection for WeatherView {
 
         let selected_date: NaiveDateTime = self.input_year_day_hour()?.try_into()?;
 
-        if selected_date < first.date() || selected_date > last.date(){
-            stdout()
-                .execute(SetForegroundColor(Color::Red))?
-                .execute(Print("Outside of data range"))?
-                .execute(SetForegroundColor(Color::White))?;
+        if selected_date < first.date() || selected_date > last.date() {
+            print_styled("Outside of data range", Color::Red, false)?;
         } else {
-            let reading = app.get_reading(selected_date.year() as u16, selected_date.ordinal0() as u16, selected_date.hour() as u8)?;
+            let reading = app.get_reading(selected_date.year() as u16, selected_date.ordinal() as u16, selected_date.hour() as u8)?;
 
             self.reset(self.reset_pos)?;
 
