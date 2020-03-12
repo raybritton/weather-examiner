@@ -2,13 +2,16 @@ use crate::app::WeatherApp;
 use crate::Error;
 use std::io::{stdout, Write};
 use crossterm::{ExecutableCommand, QueueableCommand};
-use crossterm::style::{SetForegroundColor, Print, Color};
+use crossterm::style::{SetForegroundColor, Print, Color, SetAttribute, Attribute, SetBackgroundColor};
 use crossterm::event::KeyCode;
 use crate::ui::ui_section::UiSection;
 use crate::ui::utils::{print_styled, print_first_last_reading};
 use std::convert::TryInto;
 use chrono::{NaiveDateTime, Datelike, Timelike};
-use crate::extensions::Utils;
+use crate::extensions::{Utils, MapToUnit};
+use std::any::Any;
+
+const HEADER_COLOR: Color = Color::Cyan;
 
 pub struct WeatherPredictions {
     reset_pos: (u16, u16)
@@ -19,6 +22,74 @@ impl WeatherPredictions {
         return WeatherPredictions {
             reset_pos
         };
+    }
+}
+
+impl WeatherPredictions {
+    fn print_row<D, F, S>(title: &str, data: Vec<D>, formatter: F, styler: S) -> Result<(), Error> where
+        D: Any,
+        F: Fn(D) -> String,
+        S: Fn(&D) -> Result<(), Error>
+    {
+        print_styled(&format!("\n{}", title), HEADER_COLOR, false)?;
+        print_styled2(data, formatter, styler)?;
+
+        Ok(())
+    }
+
+    fn print_temp_row(data: &Vec<f64>, skip: usize, take: usize) -> Result<(), Error> {
+        WeatherPredictions::print_row(
+            "Temp    ",
+            data.iter().skip(skip).take(take).cloned().collect(),
+            |val| format!("{: <3.0}   ", val),
+            |_| Ok(()),
+        )
+    }
+
+    fn print_prob_row(data: &Vec<usize>, skip: usize, take: usize) -> Result<(), Error> {
+        WeatherPredictions::print_row(
+            "P. Prob ",
+            data.iter().skip(skip).take(take).cloned().collect(),
+            |val| format!("{: <3}   ", val),
+            |val| {
+                let ansi = match val {
+                    90..=100 => 21,
+                    70..=89 => 20,
+                    50..=69 => 19,
+                    30..=49 => 18,
+                    _ => 16
+                };
+                stdout().execute(SetBackgroundColor(Color::AnsiValue(ansi)))?;
+                Ok(())
+            },
+        )
+    }
+
+    fn print_amt_row(data: &Vec<f64>, skip: usize, take: usize) -> Result<(), Error> {
+        WeatherPredictions::print_row(
+            "P. Amt  ",
+            data.iter().skip(skip).take(take).cloned().collect(),
+            |val| format!("{:.1}   ", val),
+            |val| {
+                let ansi = match val {
+                    d if d > &3.0 => 21,
+                    1.0..=2.999 => 20,
+                    0.3..=0.999 => 18,
+                    _ => 16
+                };
+                stdout().execute(SetBackgroundColor(Color::AnsiValue(ansi)))?;
+                Ok(())
+            },
+        )
+    }
+
+    fn print_type_row(data: &Vec<String>, skip: usize, take: usize) -> Result<(), Error> {
+        WeatherPredictions::print_row(
+            "Precip  ",
+            data.iter().skip(skip).take(take).cloned().collect(),
+            |val| format!("{: <5} ", val),
+            |_| Ok(()),
+        )
     }
 }
 
@@ -48,77 +119,50 @@ impl UiSection for WeatherPredictions {
 
                 print_styled(&format!("{} {: >3} {: >2}\n", selected_date.year(), selected_date.ordinal(), selected_date.hour()), Color::White, true)?;
 
+                (1..10).fold(String::new(), |acc, num| format!("{}{: <2}    ", acc, num));
                 let titles = (1..=23).map(|num| format!("{: <2}    ", num)).collect::<Vec<String>>().join("");
                 let titles2 = (24..=47).map(|num| format!("{: <2}    ", num)).collect::<Vec<String>>().join("");
 
-                stdout()
-                    .queue(Print("\n"))?
-                    .queue(SetForegroundColor(Color::DarkCyan))?
-                    .queue(Print(format!("        Time  {}", titles)))?
-                    .queue(SetForegroundColor(Color::White))?;
+                                let mut temps: Vec<f64> = reading.1.iter().map(|p| p.temp).collect();
+                temps.insert(0, reading.0.temp);
 
-                let temps = reading.1.iter().take(23).map(|prediction| format!("{: <3.0}   ", prediction.temp)).collect::<Vec<String>>().join("");
-                let p_prob = reading.1.iter().take(23).map(|prediction| format!("{: <3}   ", (prediction.precip_probability * 100.) as usize)).collect::<Vec<String>>().join("");
-                let p_iten = reading.1.iter().take(23).map(|prediction| format!("{:.1}   ", prediction.precip_intensity)).collect::<Vec<String>>().join("");
-                let precip = reading.1.iter().take(23).map(|prediction| format!("{: <5} ", prediction.precip_type.as_ref().unwrap_or(&String::from("-")))).collect::<Vec<String>>().join("");
+                let mut probs: Vec<usize> = reading.1.iter().map(|p| (p.precip_probability * 100.) as usize).collect();
+                probs.insert(0, (reading.0.precip_probability * 100.) as usize);
 
-                stdout()
-                    .queue(SetForegroundColor(Color::DarkCyan))?
-                    .queue(Print("\nTemp    "))?
-                    .queue(SetForegroundColor(Color::White))?
-                    .queue(Print(format!("{: <5.0} {}", reading.0.temp, temps)))?
-                    .queue(SetForegroundColor(Color::DarkCyan))?
-                    .queue(Print("\nP. Prob "))?
-                    .queue(SetForegroundColor(Color::White))?
-                    .queue(Print(format!("{: <5} {}", (reading.0.precip_probability * 100.) as usize, p_prob)))?
-                    .queue(SetForegroundColor(Color::DarkCyan))?
-                    .queue(Print("\nP. Amt  "))?
-                    .queue(SetForegroundColor(Color::White))?
-                    .queue(Print(format!("{: <5} {}", reading.0.precip_intensity, p_iten)))?
-                    .queue(SetForegroundColor(Color::DarkCyan))?
-                    .queue(Print("\nPrecip  "))?
-                    .queue(SetForegroundColor(Color::White))?
-                    .queue(Print(format!("{: <5} {}", reading.0.precip_type.as_ref().unwrap_or(&String::from("-")), precip)))?;
+                let mut amts: Vec<f64> = reading.1.iter().map(|p| p.precip_intensity).collect();
+                amts.insert(0, reading.0.precip_intensity);
 
-                let temps = reading.1.iter().skip(23).take(24).map(|prediction| format!("{: <3.0}   ", prediction.temp)).collect::<Vec<String>>().join("");
-                let p_prob = reading.1.iter().skip(23).take(24).map(|prediction| format!("{: <3}   ", (prediction.precip_probability * 100.) as usize)).collect::<Vec<String>>().join("");
-                let p_iten = reading.1.iter().skip(23).take(24).map(|prediction| format!("{:.1}   ", prediction.precip_intensity)).collect::<Vec<String>>().join("");
-                let precip = reading.1.iter().skip(23).take(24).map(|prediction| format!("{: <5} ", prediction.precip_type.as_ref().unwrap_or(&String::from("-")))).collect::<Vec<String>>().join("");
+                let mut types: Vec<String> = reading.1.iter().map(|p| p.precip_type.as_ref().unwrap_or(&String::from("-")).clone()).collect();
+                types.insert(0, reading.0.precip_type.as_ref().unwrap_or(&String::from("-")).clone());
+
+                print_styled(&format!("\n        Time  {}", titles), HEADER_COLOR, false)?;
+                WeatherPredictions::print_temp_row(&temps, 0, 24)?;
+                WeatherPredictions::print_prob_row(&probs, 0, 24)?;
+                WeatherPredictions::print_amt_row(&amts, 0, 24)?;
+                WeatherPredictions::print_type_row(&types, 0, 24)?;
+
+                print_styled(&format!("\n\n        {}", titles2), HEADER_COLOR, false)?;
+                WeatherPredictions::print_temp_row(&temps, 24, 24)?;
+                WeatherPredictions::print_prob_row(&probs, 24, 24)?;
+                WeatherPredictions::print_amt_row(&amts, 24, 24)?;
+                WeatherPredictions::print_type_row(&types, 24, 24)?;
 
                 stdout()
-                    .queue(Print("\n\n"))?
-                    .queue(SetForegroundColor(Color::DarkCyan))?
-                    .queue(Print(format!("        {}", titles2)))?
-                    .queue(SetForegroundColor(Color::White))?;
-
-                stdout()
-                    .queue(SetForegroundColor(Color::DarkCyan))?
-                    .queue(Print("\nTemp    "))?
-                    .queue(SetForegroundColor(Color::White))?
-                    .queue(Print(temps))?
-                    .queue(SetForegroundColor(Color::DarkCyan))?
-                    .queue(Print("\nP. Prob "))?
-                    .queue(SetForegroundColor(Color::White))?
-                    .queue(Print(p_prob))?
-                    .queue(SetForegroundColor(Color::DarkCyan))?
-                    .queue(Print("\nP. Amt  "))?
-                    .queue(SetForegroundColor(Color::White))?
-                    .queue(Print(p_iten))?
-                    .queue(SetForegroundColor(Color::DarkCyan))?
-                    .queue(Print("\nPrecip  "))?
-                    .queue(SetForegroundColor(Color::White))?
-                    .queue(Print(precip))?;
-
-                stdout().flush()?;
-
-                stdout()
-                    .execute(Print("\n\n(◄) Previous slot\n(►) Next slot\n(esc) Go back"))?;
+                    .execute(Print("\n\n(◄) Previous slot\n(►) Next slot\n(▲) Previous day\n(▼) Next day\n(esc) Go back"))?;
 
                 loop {
                     let char = self.wait_for_char_no_delay()?;
 
                     match char {
                         KeyCode::Esc => return Ok(()),
+                        KeyCode::Up => {
+                            selected_date = selected_date.minus_one_day();
+                            break;
+                        }
+                        KeyCode::Down => {
+                            selected_date = selected_date.plus_one_day();
+                            break;
+                        }
                         KeyCode::Left => {
                             selected_date = selected_date.minus_one_hour();
                             break;
@@ -133,4 +177,22 @@ impl UiSection for WeatherPredictions {
             }
         }
     }
+}
+
+fn print_styled2<D, F, S>(text: Vec<D>, formatter: F, styler: S) -> Result<(), Error> where
+    D: Any,
+    F: Fn(D) -> String,
+    S: Fn(&D) -> Result<(), Error>
+{
+    text.into_iter()
+        .try_for_each(|item| {
+            styler(&item)?;
+            stdout()
+                .execute(Print(formatter(item)))?
+                .execute(SetAttribute(Attribute::NormalIntensity))?
+                .execute(SetForegroundColor(Color::White))?
+                .execute(SetBackgroundColor(Color::Black))
+                .map_err(|e| Error::from(e))
+                .map_to_unit()
+        })
 }

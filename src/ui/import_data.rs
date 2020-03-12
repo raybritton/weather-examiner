@@ -2,8 +2,9 @@ use crate::ui::ui_section::UiSection;
 use crate::app::WeatherApp;
 use crate::Error;
 use std::io::stdout;
-use crossterm::style::Print;
+use crossterm::style::{Print, Color};
 use crossterm::ExecutableCommand;
+use crate::ui::utils::print_styled;
 
 pub struct ImportData {
     reset_pos: (u16, u16)
@@ -27,7 +28,7 @@ impl UiSection for ImportData {
 
         app.import_data(dir)?;
 
-        print_styled("\nDone", Color::Green, false);
+        print_styled("\nDone", Color::Green, false)?;
 
         self.wait_for_char("\nPress any key to continue\n")?;
 

@@ -5,6 +5,8 @@ use crate::models::SimpleDate;
 pub trait Utils {
     fn minus_one_hour(&self) -> Self;
     fn plus_one_hour(&self) -> Self;
+    fn minus_one_day(&self) -> Self;
+    fn plus_one_day(&self) -> Self;
 }
 
 impl Utils for NaiveDateTime {
@@ -14,6 +16,14 @@ impl Utils for NaiveDateTime {
 
     fn plus_one_hour(&self) -> NaiveDateTime {
         return self.add(Duration::hours(1));
+    }
+
+    fn minus_one_day(&self) -> Self {
+        return self.sub(Duration::days(1));
+    }
+
+    fn plus_one_day(&self) -> Self {
+        return self.add(Duration::days(1));
     }
 }
 
