@@ -1,7 +1,7 @@
 use app_dirs2::{AppInfo, app_root, AppDataType};
 use clap::{App, Arg, crate_description, crate_authors, crate_name, crate_version};
 use simplelog::{SimpleLogger, ConfigBuilder};
-use log::{LevelFilter, error};
+use log::{LevelFilter, error, trace, info};
 use crate::app::WeatherApp;
 use crate::db_manager::DbManager;
 use crate::ui::Ui;
@@ -40,6 +40,12 @@ fn main() -> Result<(), Error> {
             .help("Set verbosity of program (between 0 and 3)")
             .required(false)
             .multiple(true))
+        .arg(Arg::with_name("update")
+            .takes_value(true)
+            .long("update")
+            .value_name("PATH")
+            .multiple(false)
+            .number_of_values(1))
         .get_matches();
 
     let verbosity = matches.occurrences_of("verbose");
@@ -81,11 +87,17 @@ fn main() -> Result<(), Error> {
 
     db_manager.init()?;
 
-    let app = WeatherApp::new(db_manager);
+    let mut app = WeatherApp::new(db_manager);
 
-    let mut ui = Ui::new(app);
+    if let Some(update_dir) = matches.value_of("update") {
+        trace!("Importing");
+        app.import_data(update_dir.to_string())?;
+        info!("Done");
+    } else {
+        let mut ui = Ui::new(app);
 
-    ui.run()?;
+        ui.run()?;
+    }
 
     Ok(())
 }

@@ -170,14 +170,14 @@ impl DbManager {
 
     fn insert_weather(transaction: &Transaction, weather: &Weather) -> Result<(), CrateError> {
         let params = params![weather.id, weather.year, weather.day, weather.hour, weather.icon, weather.precip_intensity, weather.precip_probability, weather.temp, weather.wind_speed, weather.wind_gust, weather.humidity, weather.precip_type];
-        transaction.execute("INSERT INTO weather (id, year, day, hour, icon, precip_intensity, precip_probability, temp, wind_speed, wind_gust, humidity, precip_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", params)?;
+        transaction.execute("REPLACE INTO weather (id, year, day, hour, icon, precip_intensity, precip_probability, temp, wind_speed, wind_gust, humidity, precip_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", params)?;
 
         Ok(())
     }
 
     fn insert_prediction(transaction: &Transaction, origin: &Weather, target: &Weather, hour_diff: usize) -> Result<(), CrateError> {
         let params = params![target.id, origin.year, origin.day, origin.hour, target.year, target.day, target.hour, hour_diff as u8, target.icon, target.precip_intensity, target.precip_probability, target.temp, target.wind_speed, target.wind_gust, target.humidity, target.precip_type];
-        transaction.execute("INSERT INTO prediction (id, reading_year, reading_day, reading_hour, prediction_year, prediction_day, prediction_hour, hour_diff, icon, precip_intensity, precip_probability, temp, wind_speed, wind_gust, humidity, precip_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", params)?;
+        transaction.execute("REPLACE INTO prediction (id, reading_year, reading_day, reading_hour, prediction_year, prediction_day, prediction_hour, hour_diff, icon, precip_intensity, precip_probability, temp, wind_speed, wind_gust, humidity, precip_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", params)?;
 
         Ok(())
     }
