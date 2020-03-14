@@ -1,15 +1,14 @@
 use crate::app::WeatherApp;
 use crate::Error;
-use std::io::{stdout, Write};
-use crossterm::{ExecutableCommand, QueueableCommand};
-use crossterm::style::{SetForegroundColor, Print, Color, SetAttribute, Attribute, SetBackgroundColor};
+use std::io::stdout;
+use crossterm::ExecutableCommand;
+use crossterm::style::{Print, Color, SetBackgroundColor};
 use crossterm::event::KeyCode;
 use crate::ui::ui_section::UiSection;
-use crate::ui::utils::{print_styled, print_first_last_reading, print_styled_list};
+use crate::ui::utils::{print_styled, print_first_last_reading};
 use std::convert::TryInto;
 use chrono::{NaiveDateTime, Datelike, Timelike};
-use crate::extensions::{Utils, MapToUnit};
-use std::any::Any;
+use crate::extensions::Utils;
 use std::time::Duration;
 
 const HEADER_COLOR: Color = Color::Cyan;
@@ -27,29 +26,21 @@ impl WeatherPredictions {
 }
 
 impl WeatherPredictions {
-    fn print_row<D, F, S>(title: &str, data: Vec<D>, formatter: F, styler: S) -> Result<(), Error> where
-        D: Any,
-        F: Fn(D) -> String,
-        S: Fn(&D) -> Result<(), Error>
-    {
-        print_styled(&format!("\n{}", title), HEADER_COLOR, false)?;
-        print_styled_list(data, formatter, styler)?;
 
-        Ok(())
-    }
-
-    fn print_temp_row(data: &Vec<f64>, skip: usize, take: usize) -> Result<(), Error> {
-        WeatherPredictions::print_row(
+    fn print_temp_row(&self, data: &Vec<f64>, skip: usize, take: usize) -> Result<(), Error> {
+        self.print_row(
             "Temp    ",
+            HEADER_COLOR,
             data.iter().skip(skip).take(take).cloned().collect(),
             |val| format!("{: <3.0}   ", val),
             |_| Ok(()),
         )
     }
 
-    fn print_prob_row(data: &Vec<usize>, skip: usize, take: usize) -> Result<(), Error> {
-        WeatherPredictions::print_row(
+    fn print_prob_row(&self, data: &Vec<usize>, skip: usize, take: usize) -> Result<(), Error> {
+        self.print_row(
             "P. Prob ",
+            HEADER_COLOR,
             data.iter().skip(skip).take(take).cloned().collect(),
             |val| format!("{: <3}   ", val),
             |val| {
@@ -66,9 +57,10 @@ impl WeatherPredictions {
         )
     }
 
-    fn print_amt_row(data: &Vec<f64>, skip: usize, take: usize) -> Result<(), Error> {
-        WeatherPredictions::print_row(
+    fn print_amt_row(&self, data: &Vec<f64>, skip: usize, take: usize) -> Result<(), Error> {
+        self.print_row(
             "P. Amt  ",
+            HEADER_COLOR,
             data.iter().skip(skip).take(take).cloned().collect(),
             |val| format!("{:.1}   ", val),
             |val| {
@@ -84,27 +76,30 @@ impl WeatherPredictions {
         )
     }
 
-    fn print_type_row(data: &Vec<String>, skip: usize, take: usize) -> Result<(), Error> {
-        WeatherPredictions::print_row(
+    fn print_type_row(&self, data: &Vec<String>, skip: usize, take: usize) -> Result<(), Error> {
+        self.print_row(
             "Precip  ",
+            HEADER_COLOR,
             data.iter().skip(skip).take(take).cloned().collect(),
             |val| format!("{: <5} ", val),
             |_| Ok(()),
         )
     }
 
-    fn print_gust_row(data: &Vec<f64>, skip: usize, take: usize) -> Result<(), Error> {
-        WeatherPredictions::print_row(
+    fn print_gust_row(&self, data: &Vec<f64>, skip: usize, take: usize) -> Result<(), Error> {
+        self.print_row(
             "Wnd Gst ",
+            HEADER_COLOR,
             data.iter().skip(skip).take(take).cloned().collect(),
             |val| format!("{: <3.0}   ", val),
             |_| Ok(()),
         )
     }
 
-    fn print_speed_row(data: &Vec<f64>, skip: usize, take: usize) -> Result<(), Error> {
-        WeatherPredictions::print_row(
+    fn print_speed_row(&self, data: &Vec<f64>, skip: usize, take: usize) -> Result<(), Error> {
+        self.print_row(
             "Wnd Spd ",
+            HEADER_COLOR,
             data.iter().skip(skip).take(take).cloned().collect(),
             |val| format!("{: <3.0}   ", val),
             |_| Ok(()),
@@ -162,20 +157,20 @@ impl UiSection for WeatherPredictions {
                 gusts.insert(0, reading.0.wind_gust);
 
                 print_styled(&format!("\n\n        Time  {}", titles), HEADER_COLOR, false)?;
-                WeatherPredictions::print_temp_row(&temps, 0, 24)?;
-                WeatherPredictions::print_prob_row(&probs, 0, 24)?;
-                WeatherPredictions::print_amt_row(&amts, 0, 24)?;
-                WeatherPredictions::print_type_row(&types, 0, 24)?;
-                WeatherPredictions::print_speed_row(&speeds, 0, 24)?;
-                WeatherPredictions::print_gust_row(&gusts, 0, 24)?;
+                self.print_temp_row(&temps, 0, 24)?;
+                self.print_prob_row(&probs, 0, 24)?;
+                self.print_amt_row(&amts, 0, 24)?;
+                self.print_type_row(&types, 0, 24)?;
+                self.print_speed_row(&speeds, 0, 24)?;
+                self.print_gust_row(&gusts, 0, 24)?;
 
                 print_styled(&format!("\n\n        {}", titles2), HEADER_COLOR, false)?;
-                WeatherPredictions::print_temp_row(&temps, 24, 24)?;
-                WeatherPredictions::print_prob_row(&probs, 24, 24)?;
-                WeatherPredictions::print_amt_row(&amts, 24, 24)?;
-                WeatherPredictions::print_type_row(&types, 24, 24)?;
-                WeatherPredictions::print_speed_row(&speeds, 24, 24)?;
-                WeatherPredictions::print_gust_row(&gusts, 24, 24)?;
+                self.print_temp_row(&temps, 24, 24)?;
+                self.print_prob_row(&probs, 24, 24)?;
+                self.print_amt_row(&amts, 24, 24)?;
+                self.print_type_row(&types, 24, 24)?;
+                self.print_speed_row(&speeds, 24, 24)?;
+                self.print_gust_row(&gusts, 24, 24)?;
 
                 print_styled("\n\n(◄) Previous hour\n(►) Next hour\n(▲) Previous day\n(▼) Next day\n(esc) Go back", Color::Grey, false)?;
 
