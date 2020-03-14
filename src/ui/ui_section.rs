@@ -1,6 +1,6 @@
 use crate::Error;
 use std::io::{stdout, stdin, Write};
-use crossterm::style::Print;
+use crossterm::style::{Print, Color};
 use crossterm::{ExecutableCommand, QueueableCommand, cursor};
 use crossterm::event::KeyCode;
 use crossterm::event::Event::Key;
@@ -9,8 +9,9 @@ use log::error;
 use crossterm::cursor::MoveTo;
 use crossterm::terminal::{Clear, ClearType};
 use crate::models::SimpleDate;
-use crate::ui::utils::consume_all_input;
+use crate::ui::utils::{consume_all_input, print_styled, print_styled_list};
 use crate::extensions::MapToUnit;
+use std::any::Any;
 
 pub trait UiSection {
     fn run(&mut self, app: &mut WeatherApp) -> Result<(), Error>;
@@ -111,6 +112,34 @@ pub trait UiSection {
         Ok(SimpleDate::new(year, day, hour))
     }
 
+    fn input_year_day(&mut self) -> Result<SimpleDate, Error> {
+        consume_all_input()?;
+        stdout()
+            .execute(cursor::Show)?;
+
+        let year = self.read_input("\n\nEnter year\n")?.parse()?;
+        let day = self.read_input("\n\nEnter day\n")?.parse()?;
+
+        stdout()
+            .execute(cursor::Hide)?;
+
+        Ok(SimpleDate::new(year, day, 0))
+    }
+
+    fn input_year_month(&mut self) -> Result<(u16, u8), Error> {
+        consume_all_input()?;
+        stdout()
+            .execute(cursor::Show)?;
+
+        let year = self.read_input("\n\nEnter year\n")?.parse()?;
+        let month = self.read_input("\n\nEnter month\n")?.parse()?;
+
+        stdout()
+            .execute(cursor::Hide)?;
+
+        Ok((year, month))
+    }
+
     /// Show a menu of options
     ///
     /// If exit is true then a final option of 'Exit' will be added
@@ -151,5 +180,16 @@ pub trait UiSection {
                 }
             }
         }
+    }
+
+    fn print_row<D, F, S>(&self, title: &str, header_color: Color, data: Vec<D>, formatter: F, styler: S) -> Result<(), Error> where
+        D: Any,
+        F: Fn(D) -> String,
+        S: Fn(&D) -> Result<(), Error>
+    {
+        print_styled(&format!("\n{}", title), header_color, false)?;
+        print_styled_list(data, formatter, styler)?;
+
+        Ok(())
     }
 }
