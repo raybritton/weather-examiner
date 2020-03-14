@@ -75,11 +75,18 @@ impl DbManager {
         return Ok(predictions);
     }
 
+    pub fn get_readings_over_range(&mut self, start: i64, end: i64) -> Result<Vec<Weather>, Error> {
+        let mut statement = self.conn.prepare("SELECT id, year, day, hour, icon, precip_intensity, precip_probability, temp, wind_speed, wind_gust, humidity, precip_type FROM weather WHERE timestamp >= ? AND timestamp <= ? ORDER BY id ASC")?;
+        let weathers = statement.query_map(&[start, end], |row| Ok(DbManager::build_weather(row)))?
+            .map(|weather| weather.unwrap())
+            .collect();
+
+        return Ok(weathers);
+    }
+
     pub fn get_readings(&mut self, sort: &str, count: usize) -> Result<Vec<Weather>, Error> {
         let mut statement = self.conn.prepare(&format!("SELECT id, year, day, hour, icon, precip_intensity, precip_probability, temp, wind_speed, wind_gust, humidity, precip_type FROM weather ORDER BY id {} LIMIT {}", sort, count))?;
-        let weathers = statement.query_map(NO_PARAMS, |row| {
-            return Ok(DbManager::build_weather(row));
-        })?
+        let weathers = statement.query_map(NO_PARAMS, |row| Ok(DbManager::build_weather(row)))?
             .map(|weather| weather.unwrap())
             .collect();
 

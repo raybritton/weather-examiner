@@ -2,10 +2,9 @@ use crate::db_manager::DbManager;
 use crate::Error;
 use std::path::PathBuf;
 use std::fs;
-use std::error::Error as StdError;
 use log::error;
 use crate::templates::DarkSkyReading;
-use crate::models::{Weather, Prediction};
+use crate::models::{Weather, Prediction, SimpleDate};
 use chrono::NaiveDateTime;
 use crate::extensions::Utils;
 
@@ -42,6 +41,22 @@ impl WeatherApp {
         } else {
             return Err(weather.unwrap_err());
         }
+    }
+
+    /// Get hourly reads from start to end (inclusive, inclusive)
+    ///
+    /// # Errors
+    /// Database errors
+    /// No readings in database
+    ///
+    /// # Returns
+    /// List of readings
+    ///
+    pub fn get_readings_over_range(&mut self, start: SimpleDate, end: SimpleDate) -> Result<Vec<Weather>, Error> {
+        let start = Into::<NaiveDateTime>::into(start).timestamp();
+        let end = Into::<NaiveDateTime>::into(end).timestamp();
+        return self.db_manager.get_readings_over_range(start, end)
+            .map_err(|err| err.into());
     }
 
     /// Get the first reading
@@ -180,7 +195,7 @@ impl WeatherApp {
                     files.push(entry.path());
                 }
                 Err(err) => {
-                    errors.push(format!("{:?}: {}", err.kind(), err.description()));
+                    errors.push(format!("{:?}: {}", err.kind(), err));
                 }
             }
         }
