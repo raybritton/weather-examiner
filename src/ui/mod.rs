@@ -16,6 +16,9 @@ mod weather_view;
 mod main_menu;
 mod import_data;
 mod missing_records;
+mod day_view;
+mod month_view;
+mod weather_diff;
 
 pub struct Ui {
     app: WeatherApp,
