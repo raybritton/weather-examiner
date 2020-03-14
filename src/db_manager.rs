@@ -3,7 +3,7 @@ use crate::Error as CrateError;
 use log::{trace, debug, error};
 use crate::models::{Weather, Icon, Prediction};
 
-const CREATE_WEATHER_TABLE: &str = "CREATE TABLE IF NOT EXISTS weather (id TEXT PRIMARY KEY, year INTEGER, day INTEGER, hour INTEGER, icon TEXT, precip_intensity REAL, precip_probability REAL, temp REAL, wind_speed REAL, wind_gust REAL, humidity REAL, precip_type TEXT)";
+const CREATE_WEATHER_TABLE: &str = "CREATE TABLE IF NOT EXISTS weather (id TEXT PRIMARY KEY, timestamp REAL, year INTEGER, day INTEGER, hour INTEGER, icon TEXT, precip_intensity REAL, precip_probability REAL, temp REAL, wind_speed REAL, wind_gust REAL, humidity REAL, precip_type TEXT)";
 const CREATE_WEATHER_UNIQUE_INDEX: &str = "CREATE UNIQUE INDEX IF NOT EXISTS year_day_hour ON weather (year, day, hour)";
 const CREATE_PREDICATION_TABLE: &str = "CREATE TABLE IF NOT EXISTS prediction (id TEXT PRIMARY KEY, reading_year INTEGER, reading_day INTEGER, reading_hour INTEGER, prediction_year INTEGER, prediction_day INTEGER, prediction_hour INTEGER, hour_diff INTEGER, icon TEXT, precip_intensity REAL, precip_probability REAL, temp REAL, wind_speed REAL, wind_gust REAL, humidity REAL, precip_type TEXT)";
 const CREATE_PREDICATION_UNIQUE_INDEX: &str = "CREATE UNIQUE INDEX IF NOT EXISTS year_day_hour_diff ON prediction (reading_year, reading_day, reading_hour, prediction_year, prediction_day, prediction_hour)";
@@ -169,8 +169,8 @@ impl DbManager {
     }
 
     fn insert_weather(transaction: &Transaction, weather: &Weather) -> Result<(), CrateError> {
-        let params = params![weather.id, weather.year, weather.day, weather.hour, weather.icon, weather.precip_intensity, weather.precip_probability, weather.temp, weather.wind_speed, weather.wind_gust, weather.humidity, weather.precip_type];
-        transaction.execute("REPLACE INTO weather (id, year, day, hour, icon, precip_intensity, precip_probability, temp, wind_speed, wind_gust, humidity, precip_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", params)?;
+        let params = params![weather.id, weather.timestamp, weather.year, weather.day, weather.hour, weather.icon, weather.precip_intensity, weather.precip_probability, weather.temp, weather.wind_speed, weather.wind_gust, weather.humidity, weather.precip_type];
+        transaction.execute("REPLACE INTO weather (id, timestamp, year, day, hour, icon, precip_intensity, precip_probability, temp, wind_speed, wind_gust, humidity, precip_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", params)?;
 
         Ok(())
     }

@@ -12,6 +12,8 @@ use chrono::NaiveDateTime;
 pub struct Weather {
     /// ID of weather reading, should be '{year}-{day}-{hour}'
     pub id: String,
+    /// Unix timestamp of reading
+    pub timestamp: i64,
     /// UTC year of reading
     pub year: u16,
     /// UTC day of year of reading
@@ -74,7 +76,8 @@ pub struct Prediction {
 
 impl Weather {
     pub fn new(id: String, year: u16, day: u16, hour: u8, icon: Icon, precip_intensity: f64, precip_probability: f64, temp: f64, wind_speed: f64, wind_gust: f64, humidity: f64, precip_type: Option<String>) -> Weather {
-        return Weather { id, year, day, hour, icon, precip_intensity, precip_probability, temp, wind_speed, wind_gust, humidity, precip_type };
+        let timestamp = Into::<NaiveDateTime>::into(SimpleDate::new(year, day, hour)).timestamp();
+        return Weather { id, timestamp, year, day, hour, icon, precip_intensity, precip_probability, temp, wind_speed, wind_gust, humidity, precip_type };
     }
 }
 
