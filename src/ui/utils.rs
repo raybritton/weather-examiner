@@ -20,12 +20,12 @@ pub fn print_styled(msg: &str, color: Color, bold: bool) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn print_styled_list<D, F, S>(text: Vec<D>, formatter: F, styler: S) -> Result<(), Error> where
+pub fn print_styled_list<D, F, S>(data: Vec<D>, formatter: F, styler: S) -> Result<(), Error> where
     D: Any,
     F: Fn(D) -> String,
     S: Fn(&D) -> Result<(), Error>
 {
-    text.into_iter()
+    data.into_iter()
         .try_for_each(|item| {
             styler(&item)?;
             stdout()
