@@ -36,6 +36,12 @@ impl From<SimpleDate> for NaiveDateTime {
     }
 }
 
+impl From<NaiveDateTime> for SimpleDate {
+    fn from(date: NaiveDateTime) -> Self {
+        return SimpleDate::new(date.year() as u16, date.ordinal() as u16, date.hour() as u8);
+    }
+}
+
 fn unit() {
     return ();
 }
