@@ -14,6 +14,7 @@ mod models;
 mod templates;
 mod ui;
 mod extensions;
+mod min_max_avg;
 
 const APP_INFO: AppInfo = AppInfo {
     name: "Weather",

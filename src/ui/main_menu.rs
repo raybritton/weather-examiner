@@ -33,7 +33,7 @@ impl UiSection for MainMenu {
                 "Reading for day",
                 "Reading for month",
                 "Predictions for specific point",
-                "Differences for specific point"
+                // "Differences for specific point"
             ];
 
             let input = self.menu(menu_options, true)?;

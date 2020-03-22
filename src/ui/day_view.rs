@@ -24,7 +24,9 @@ impl DayView {
             reset_pos
         };
     }
+}
 
+impl DayView {
     fn print_temp_row(&self, data: Vec<f64>) -> Result<(), Error> {
         self.print_row(
             "Temp    ",
