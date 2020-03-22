@@ -2,7 +2,7 @@ use crate::db_manager::DbManager;
 use crate::Error;
 use std::path::PathBuf;
 use std::fs;
-use log::error;
+use log::{error, trace};
 use crate::templates::DarkSkyReading;
 use crate::models::{Weather, Prediction, SimpleDate};
 use chrono::NaiveDateTime;
@@ -32,14 +32,14 @@ impl WeatherApp {
         let predictions = self.db_manager.get_predictions_for(year, day, hour)
             .map_err(|err| err.into());
 
-        if let Ok(weather) = weather {
+        return if let Ok(weather) = weather {
             if let Ok(predictions) = predictions {
-                return Ok((weather, predictions));
+                Ok((weather, predictions))
             } else {
-                return Err(predictions.unwrap_err());
+                Err(predictions.unwrap_err())
             }
         } else {
-            return Err(weather.unwrap_err());
+            Err(weather.unwrap_err())
         }
     }
 
@@ -169,6 +169,8 @@ impl WeatherApp {
 
         self.db_manager.add_weather(current_weather, future_weathers)?;
 
+        trace!("Imported {}", file.to_string_lossy().into_owned());
+
         Ok(())
     }
 
@@ -200,12 +202,14 @@ impl WeatherApp {
             }
         }
 
-        let filtered = files.into_iter()
+        let mut filtered: Vec<PathBuf> = files.into_iter()
             .filter(|entry| entry.is_file())
             .filter(|entry| entry.file_name().is_some())
             .filter(|entry| entry.file_name().unwrap().to_str().is_some())
             .filter(|entry| entry.file_name().unwrap().to_str().unwrap().ends_with(".json"))
             .collect();
+
+        filtered.sort();
 
         return Ok((filtered, errors));
     }

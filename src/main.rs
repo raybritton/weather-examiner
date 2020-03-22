@@ -45,8 +45,14 @@ fn main() -> Result<(), Error> {
             .takes_value(true)
             .long("update")
             .value_name("PATH")
+            .help("Update DB with all json files at path and exit")
             .multiple(false)
             .number_of_values(1))
+        .arg(Arg::with_name("path")
+            .takes_value(false)
+            .long("path")
+            .help("Print database path and exit")
+            .multiple(false))
         .get_matches();
 
     let verbosity = matches.occurrences_of("verbose");
@@ -84,7 +90,7 @@ fn main() -> Result<(), Error> {
         }
     };
 
-    let mut db_manager = DbManager::new(db_file)?;
+    let mut db_manager = DbManager::new(db_file.clone())?;
 
     db_manager.init()?;
 
@@ -94,6 +100,8 @@ fn main() -> Result<(), Error> {
         trace!("Importing");
         app.import_data(update_dir.to_string())?;
         info!("Done");
+    } else if matches.is_present("path") {
+        println!("{}", db_file);
     } else {
         let mut ui = Ui::new(app);
 
