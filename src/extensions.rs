@@ -28,12 +28,14 @@ impl Utils for NaiveDateTime {
         return self.add(Duration::days(1));
     }
 
+    //Sets day to 1
     fn plus_one_month(&self) -> Self {
         let days = days_in_month(self.month() as u8, self.year() as u32);
         let start = self.with_day(1).expect("Day 1 invalid (plus one month)");
-        return start.add(Duration::days((days + 1) as i64));
+        return start.add(Duration::days(days as i64));
     }
 
+    //Sets day to 1
     fn minus_one_month(&self) -> Self {
         return self.with_day(1).expect("Day 1 invalid (minus one month [a])")
             .sub(Duration::days(1))
@@ -123,21 +125,21 @@ mod test {
         assert!(is_leap_year(2016), "is leap year");
     }
 
-    ///
-    /// +/- 1 day
-    ///
+
+
+
 
     #[test]
     fn test_one_day_middle_month() {
         let middle_of_month = NaiveDateTime::from_str("2015-09-18T23:56:04").unwrap();
         let middle_plus_one = middle_of_month.plus_one_day();
         let middle_minus_one = middle_of_month.minus_one_day();
-        assert_eq!(middle_plus_one.hour(), 23, "+1 h");
-        assert_eq!(middle_plus_one.day(), 19, "+1 d");
-        assert_eq!(middle_plus_one.month(), 9, "+1 m");
-        assert_eq!(middle_minus_one.hour(), 23, "-1 h");
-        assert_eq!(middle_minus_one.day(), 17, "-1 d");
-        assert_eq!(middle_minus_one.month(), 9, "-1 m");
+        assert_eq!(middle_plus_one.hour(), 23, "+ h");
+        assert_eq!(middle_plus_one.day(), 19, "+ d");
+        assert_eq!(middle_plus_one.month(), 9, "+ m");
+        assert_eq!(middle_minus_one.hour(), 23, "- h");
+        assert_eq!(middle_minus_one.day(), 17, "- d");
+        assert_eq!(middle_minus_one.month(), 9, "- m");
     }
 
     #[test]
@@ -145,34 +147,34 @@ mod test {
         let april_start = NaiveDateTime::from_str("2015-04-1T23:56:04").unwrap();
         let april_start_plus_one = april_start.plus_one_day();
         let april_start_minus_one = april_start.minus_one_day();
-        assert_eq!(april_start_plus_one.hour(), 23, "april +1 h");
-        assert_eq!(april_start_plus_one.day(), 2, "april +1 d");
-        assert_eq!(april_start_plus_one.month(), 4, "april +1 m");
-        assert_eq!(april_start_minus_one.hour(), 23, "april -1 h");
-        assert_eq!(april_start_minus_one.day(), 31, "april -1 d");
-        assert_eq!(april_start_minus_one.month(), 3, "april -1 m");
+        assert_eq!(april_start_plus_one.hour(), 23, "april + h");
+        assert_eq!(april_start_plus_one.day(), 2, "april + d");
+        assert_eq!(april_start_plus_one.month(), 4, "april + m");
+        assert_eq!(april_start_minus_one.hour(), 23, "april - h");
+        assert_eq!(april_start_minus_one.day(), 31, "april - d");
+        assert_eq!(april_start_minus_one.month(), 3, "april - m");
 
         //non leap
         let march_start = NaiveDateTime::from_str("2015-03-1T23:56:04").unwrap();
         let march_start_plus_one = march_start.plus_one_day();
         let march_start_minus_one = march_start.minus_one_day();
-        assert_eq!(march_start_plus_one.hour(), 23, "march +1 h");
-        assert_eq!(march_start_plus_one.day(), 2, "march +1 d");
-        assert_eq!(march_start_plus_one.month(), 3, "march +1 m");
-        assert_eq!(march_start_minus_one.hour(), 23, "march -1 h");
-        assert_eq!(march_start_minus_one.day(), 28, "march -1 d");
-        assert_eq!(march_start_minus_one.month(), 2, "march -1 m");
+        assert_eq!(march_start_plus_one.hour(), 23, "march + h");
+        assert_eq!(march_start_plus_one.day(), 2, "march + d");
+        assert_eq!(march_start_plus_one.month(), 3, "march + m");
+        assert_eq!(march_start_minus_one.hour(), 23, "march - h");
+        assert_eq!(march_start_minus_one.day(), 28, "march - d");
+        assert_eq!(march_start_minus_one.month(), 2, "march - m");
 
         //leap
         let march_leap_start = NaiveDateTime::from_str("2020-03-1T23:56:04").unwrap();
         let march_leap_start_plus_one = march_leap_start.plus_one_day();
         let march_leap_start_minus_one = march_leap_start.minus_one_day();
-        assert_eq!(march_leap_start_plus_one.hour(), 23, "leap march +1 h");
-        assert_eq!(march_leap_start_plus_one.day(), 2, "leap march +1 d");
-        assert_eq!(march_leap_start_plus_one.month(), 3, "leap march +1 m");
-        assert_eq!(march_leap_start_minus_one.hour(), 23, "leap march -1 h");
-        assert_eq!(march_leap_start_minus_one.day(), 29, "leap march -1 d");
-        assert_eq!(march_leap_start_minus_one.month(), 2, "leap march -1 m");
+        assert_eq!(march_leap_start_plus_one.hour(), 23, "leap march + h");
+        assert_eq!(march_leap_start_plus_one.day(), 2, "leap march + d");
+        assert_eq!(march_leap_start_plus_one.month(), 3, "leap march + m");
+        assert_eq!(march_leap_start_minus_one.hour(), 23, "leap march - h");
+        assert_eq!(march_leap_start_minus_one.day(), 29, "leap march - d");
+        assert_eq!(march_leap_start_minus_one.month(), 2, "leap march - m");
     }
 
     #[test]
@@ -180,53 +182,53 @@ mod test {
         let april_end = NaiveDateTime::from_str("2015-04-30T23:56:04").unwrap();
         let april_end_plus_one = april_end.plus_one_day();
         let april_end_minus_one = april_end.minus_one_day();
-        assert_eq!(april_end_plus_one.hour(), 23, "april +1 h");
-        assert_eq!(april_end_plus_one.day(), 1, "april +1 d");
-        assert_eq!(april_end_plus_one.month(), 5, "april +1 m");
-        assert_eq!(april_end_minus_one.hour(), 23, "april -1 h");
-        assert_eq!(april_end_minus_one.day(), 29, "april -1 d");
-        assert_eq!(april_end_minus_one.month(), 4, "april -1 m");
+        assert_eq!(april_end_plus_one.hour(), 23, "april + h");
+        assert_eq!(april_end_plus_one.day(), 1, "april + d");
+        assert_eq!(april_end_plus_one.month(), 5, "april + m");
+        assert_eq!(april_end_minus_one.hour(), 23, "april - h");
+        assert_eq!(april_end_minus_one.day(), 29, "april - d");
+        assert_eq!(april_end_minus_one.month(), 4, "april - m");
 
         //non leap
         let feb_end = NaiveDateTime::from_str("2015-02-28T23:56:04").unwrap();
         let feb_end_plus_one = feb_end.plus_one_day();
         let feb_end_minus_one = feb_end.minus_one_day();
-        assert_eq!(feb_end_plus_one.hour(), 23, "feb +1 h");
-        assert_eq!(feb_end_plus_one.day(), 1, "feb +1 d");
-        assert_eq!(feb_end_plus_one.month(), 3, "feb +1 m");
-        assert_eq!(feb_end_minus_one.hour(), 23, "feb -1 h");
-        assert_eq!(feb_end_minus_one.day(), 27, "feb -1 d");
-        assert_eq!(feb_end_minus_one.month(), 2, "feb -1 m");
+        assert_eq!(feb_end_plus_one.hour(), 23, "feb + h");
+        assert_eq!(feb_end_plus_one.day(), 1, "feb + d");
+        assert_eq!(feb_end_plus_one.month(), 3, "feb + m");
+        assert_eq!(feb_end_minus_one.hour(), 23, "feb - h");
+        assert_eq!(feb_end_minus_one.day(), 27, "feb - d");
+        assert_eq!(feb_end_minus_one.month(), 2, "feb - m");
 
         //leap
         let feb_leap_end = NaiveDateTime::from_str("2020-02-29T23:56:04").unwrap();
         let feb_leap_end_plus_one = feb_leap_end.plus_one_day();
         let feb_leap_end_minus_one = feb_leap_end.minus_one_day();
-        assert_eq!(feb_leap_end_plus_one.hour(), 23, "leap feb +1 h");
-        assert_eq!(feb_leap_end_plus_one.day(), 1, "leap feb +1 d");
-        assert_eq!(feb_leap_end_plus_one.month(), 3, "leap feb +1 m");
-        assert_eq!(feb_leap_end_minus_one.hour(), 23, "leap feb -1 h");
-        assert_eq!(feb_leap_end_minus_one.day(), 28, "leap feb -1 d");
-        assert_eq!(feb_leap_end_minus_one.month(), 2, "leap feb -1 m");
+        assert_eq!(feb_leap_end_plus_one.hour(), 23, "leap feb + h");
+        assert_eq!(feb_leap_end_plus_one.day(), 1, "leap feb + d");
+        assert_eq!(feb_leap_end_plus_one.month(), 3, "leap feb + m");
+        assert_eq!(feb_leap_end_minus_one.hour(), 23, "leap feb - h");
+        assert_eq!(feb_leap_end_minus_one.day(), 28, "leap feb - d");
+        assert_eq!(feb_leap_end_minus_one.month(), 2, "leap feb - m");
     }
 
-    ///
-    /// +/- 1 hour
-    ///
+
+
+
 
     #[test]
     fn test_one_hour_middle_day() {
         let middle_of_month = NaiveDateTime::from_str("2015-09-18T13:56:04").unwrap();
         let middle_plus_one = middle_of_month.plus_one_hour();
         let middle_minus_one = middle_of_month.minus_one_hour();
-        assert_eq!(middle_plus_one.minute(), 56, "+1 min");
-        assert_eq!(middle_plus_one.hour(), 14, "+1 h");
-        assert_eq!(middle_plus_one.day(), 18, "+1 d");
-        assert_eq!(middle_plus_one.month(), 9, "+1 m");
-        assert_eq!(middle_minus_one.minute(), 56, "-1 min");
-        assert_eq!(middle_minus_one.hour(), 12, "-1 h");
-        assert_eq!(middle_minus_one.day(), 18, "-1 d");
-        assert_eq!(middle_minus_one.month(), 9, "-1 m");
+        assert_eq!(middle_plus_one.minute(), 56, "+ min");
+        assert_eq!(middle_plus_one.hour(), 14, "+ h");
+        assert_eq!(middle_plus_one.day(), 18, "+ d");
+        assert_eq!(middle_plus_one.month(), 9, "+ m");
+        assert_eq!(middle_minus_one.minute(), 56, "- min");
+        assert_eq!(middle_minus_one.hour(), 12, "- h");
+        assert_eq!(middle_minus_one.day(), 18, "- d");
+        assert_eq!(middle_minus_one.month(), 9, "- m");
     }
 
     #[test]
@@ -234,40 +236,40 @@ mod test {
         let april_start = NaiveDateTime::from_str("2015-04-1T0:56:04").unwrap();
         let april_start_plus_one = april_start.plus_one_hour();
         let april_start_minus_one = april_start.minus_one_hour();
-        assert_eq!(april_start_plus_one.minute(), 56, "april +1 min");
-        assert_eq!(april_start_plus_one.hour(), 1, "april +1 h");
-        assert_eq!(april_start_plus_one.day(), 1, "april +1 d");
-        assert_eq!(april_start_plus_one.month(), 4, "april +1 m");
-        assert_eq!(april_start_minus_one.minute(), 56, "april -1 min");
-        assert_eq!(april_start_minus_one.hour(), 23, "april -1 h");
-        assert_eq!(april_start_minus_one.day(), 31, "april -1 d");
-        assert_eq!(april_start_minus_one.month(), 3, "april -1 m");
+        assert_eq!(april_start_plus_one.minute(), 56, "april + min");
+        assert_eq!(april_start_plus_one.hour(), 1, "april + h");
+        assert_eq!(april_start_plus_one.day(), 1, "april + d");
+        assert_eq!(april_start_plus_one.month(), 4, "april + m");
+        assert_eq!(april_start_minus_one.minute(), 56, "april - min");
+        assert_eq!(april_start_minus_one.hour(), 23, "april - h");
+        assert_eq!(april_start_minus_one.day(), 31, "april - d");
+        assert_eq!(april_start_minus_one.month(), 3, "april - m");
 
         //non leap
         let march_start = NaiveDateTime::from_str("2015-03-1T0:56:04").unwrap();
         let march_start_plus_one = march_start.plus_one_hour();
         let march_start_minus_one = march_start.minus_one_hour();
-        assert_eq!(march_start_plus_one.minute(), 56, "march +1 min");
-        assert_eq!(march_start_plus_one.hour(), 1, "march +1 h");
-        assert_eq!(march_start_plus_one.day(), 1, "march +1 d");
-        assert_eq!(march_start_plus_one.month(), 3, "march +1 m");
-        assert_eq!(march_start_minus_one.minute(), 56, "march -1 min");
-        assert_eq!(march_start_minus_one.hour(), 23, "march -1 h");
-        assert_eq!(march_start_minus_one.day(), 28, "march -1 d");
-        assert_eq!(march_start_minus_one.month(), 2, "march -1 m");
+        assert_eq!(march_start_plus_one.minute(), 56, "march + min");
+        assert_eq!(march_start_plus_one.hour(), 1, "march + h");
+        assert_eq!(march_start_plus_one.day(), 1, "march + d");
+        assert_eq!(march_start_plus_one.month(), 3, "march + m");
+        assert_eq!(march_start_minus_one.minute(), 56, "march - min");
+        assert_eq!(march_start_minus_one.hour(), 23, "march - h");
+        assert_eq!(march_start_minus_one.day(), 28, "march - d");
+        assert_eq!(march_start_minus_one.month(), 2, "march - m");
 
         //leap
         let march_leap_start = NaiveDateTime::from_str("2020-03-1T0:56:04").unwrap();
         let march_leap_start_plus_one = march_leap_start.plus_one_hour();
         let march_leap_start_minus_one = march_leap_start.minus_one_hour();
-        assert_eq!(march_leap_start_plus_one.minute(), 56, "leap march +1 min");
-        assert_eq!(march_leap_start_plus_one.hour(), 1, "leap march +1 h");
-        assert_eq!(march_leap_start_plus_one.day(), 1, "leap march +1 d");
-        assert_eq!(march_leap_start_plus_one.month(), 3, "leap march +1 m");
-        assert_eq!(march_leap_start_minus_one.minute(), 56, "leap march -1 min");
-        assert_eq!(march_leap_start_minus_one.hour(), 23, "leap march -1 h");
-        assert_eq!(march_leap_start_minus_one.day(), 29, "leap march -1 d");
-        assert_eq!(march_leap_start_minus_one.month(), 2, "leap march -1 m");
+        assert_eq!(march_leap_start_plus_one.minute(), 56, "leap march + min");
+        assert_eq!(march_leap_start_plus_one.hour(), 1, "leap march + h");
+        assert_eq!(march_leap_start_plus_one.day(), 1, "leap march + d");
+        assert_eq!(march_leap_start_plus_one.month(), 3, "leap march + m");
+        assert_eq!(march_leap_start_minus_one.minute(), 56, "leap march - min");
+        assert_eq!(march_leap_start_minus_one.hour(), 23, "leap march - h");
+        assert_eq!(march_leap_start_minus_one.day(), 29, "leap march - d");
+        assert_eq!(march_leap_start_minus_one.month(), 2, "leap march - m");
     }
 
     #[test]
@@ -275,40 +277,57 @@ mod test {
         let april_end = NaiveDateTime::from_str("2015-04-30T23:56:04").unwrap();
         let april_end_plus_one = april_end.plus_one_hour();
         let april_end_minus_one = april_end.minus_one_hour();
-        assert_eq!(april_end_plus_one.minute(), 56, "april +1 min");
-        assert_eq!(april_end_plus_one.hour(), 0, "april +1 h");
-        assert_eq!(april_end_plus_one.day(), 1, "april +1 d");
-        assert_eq!(april_end_plus_one.month(), 5, "april +1 m");
-        assert_eq!(april_end_minus_one.minute(), 56, "april -1 min");
-        assert_eq!(april_end_minus_one.hour(), 22, "april -1 h");
-        assert_eq!(april_end_minus_one.day(), 30, "april -1 d");
-        assert_eq!(april_end_minus_one.month(), 4, "april -1 m");
+        assert_eq!(april_end_plus_one.minute(), 56, "april + min");
+        assert_eq!(april_end_plus_one.hour(), 0, "april + h");
+        assert_eq!(april_end_plus_one.day(), 1, "april + d");
+        assert_eq!(april_end_plus_one.month(), 5, "april + m");
+        assert_eq!(april_end_minus_one.minute(), 56, "april - min");
+        assert_eq!(april_end_minus_one.hour(), 22, "april - h");
+        assert_eq!(april_end_minus_one.day(), 30, "april - d");
+        assert_eq!(april_end_minus_one.month(), 4, "april - m");
 
         //non leap
         let feb_end = NaiveDateTime::from_str("2015-02-28T23:56:04").unwrap();
         let feb_end_plus_one = feb_end.plus_one_hour();
         let feb_end_minus_one = feb_end.minus_one_hour();
-        assert_eq!(feb_end_plus_one.minute(), 56, "feb +1 min");
-        assert_eq!(feb_end_plus_one.hour(), 0, "feb +1 h");
-        assert_eq!(feb_end_plus_one.day(), 1, "feb +1 d");
-        assert_eq!(feb_end_plus_one.month(), 3, "feb +1 m");
-        assert_eq!(feb_end_minus_one.minute(), 56, "feb -1 min");
-        assert_eq!(feb_end_minus_one.hour(), 22, "feb -1 h");
-        assert_eq!(feb_end_minus_one.day(), 28, "feb -1 d");
-        assert_eq!(feb_end_minus_one.month(), 2, "feb -1 m");
+        assert_eq!(feb_end_plus_one.minute(), 56, "feb + min");
+        assert_eq!(feb_end_plus_one.hour(), 0, "feb + h");
+        assert_eq!(feb_end_plus_one.day(), 1, "feb + d");
+        assert_eq!(feb_end_plus_one.month(), 3, "feb + m");
+        assert_eq!(feb_end_minus_one.minute(), 56, "feb - min");
+        assert_eq!(feb_end_minus_one.hour(), 22, "feb - h");
+        assert_eq!(feb_end_minus_one.day(), 28, "feb - d");
+        assert_eq!(feb_end_minus_one.month(), 2, "feb - m");
 
         //leap
         let feb_leap_end = NaiveDateTime::from_str("2020-02-29T23:56:04").unwrap();
         let feb_leap_end_plus_one = feb_leap_end.plus_one_hour();
         let feb_leap_end_minus_one = feb_leap_end.minus_one_hour();
-        assert_eq!(feb_leap_end_plus_one.minute(), 56, "leap feb +1 min");
-        assert_eq!(feb_leap_end_plus_one.hour(), 0, "leap feb +1 h");
-        assert_eq!(feb_leap_end_plus_one.day(), 1, "leap feb +1 d");
-        assert_eq!(feb_leap_end_plus_one.month(), 3, "leap feb +1 m");
-        assert_eq!(feb_leap_end_minus_one.minute(), 56, "leap feb -1 min");
-        assert_eq!(feb_leap_end_minus_one.hour(), 22, "leap feb -1 h");
-        assert_eq!(feb_leap_end_minus_one.day(), 29, "leap feb -1 d");
-        assert_eq!(feb_leap_end_minus_one.month(), 2, "leap feb -1 m");
+        assert_eq!(feb_leap_end_plus_one.minute(), 56, "leap feb + min");
+        assert_eq!(feb_leap_end_plus_one.hour(), 0, "leap feb + h");
+        assert_eq!(feb_leap_end_plus_one.day(), 1, "leap feb + d");
+        assert_eq!(feb_leap_end_plus_one.month(), 3, "leap feb + m");
+        assert_eq!(feb_leap_end_minus_one.minute(), 56, "leap feb - min");
+        assert_eq!(feb_leap_end_minus_one.hour(), 22, "leap feb - h");
+        assert_eq!(feb_leap_end_minus_one.day(), 29, "leap feb - d");
+        assert_eq!(feb_leap_end_minus_one.month(), 2, "leap feb - m");
     }
 
+
+
+
+    #[test]
+    fn test_one_month() {
+        let august = NaiveDateTime::from_str("2015-08-18T13:56:04").unwrap();
+        let september = august.plus_one_month();
+        let july = august.minus_one_month();
+        assert_eq!(september.minute(), 56, "+ min");
+        assert_eq!(september.hour(), 13, "+ h");
+        assert_eq!(september.day(), 1, "+ d");
+        assert_eq!(september.month(), 9, "+ m");
+        assert_eq!(july.minute(), 56, "- min");
+        assert_eq!(july.hour(), 13, "- h");
+        assert_eq!(july.day(), 1, "- d");
+        assert_eq!(july.month(), 7, "- m");
+    }
 }
