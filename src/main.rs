@@ -5,6 +5,7 @@ use log::{LevelFilter, error, trace, info};
 use crate::app::WeatherApp;
 use crate::db_manager::DbManager;
 use crate::ui::Ui;
+use std::path::Path;
 
 pub type Error = Box<dyn std::error::Error>;
 
@@ -45,13 +46,21 @@ fn main() -> Result<(), Error> {
             .takes_value(true)
             .long("update")
             .value_name("PATH")
+            .conflicts_with_all(&["path", "clear"])
             .help("Update DB with all json files at path and exit")
             .multiple(false)
             .number_of_values(1))
         .arg(Arg::with_name("path")
             .takes_value(false)
             .long("path")
+            .conflicts_with_all(&["update", "clear"])
             .help("Print database path and exit")
+            .multiple(false))
+        .arg(Arg::with_name("clear")
+            .takes_value(false)
+            .long("clear")
+            .help("Delete database file")
+            .conflicts_with_all(&["update", "path"])
             .multiple(false))
         .get_matches();
 
@@ -97,11 +106,13 @@ fn main() -> Result<(), Error> {
     let mut app = WeatherApp::new(db_manager);
 
     if let Some(update_dir) = matches.value_of("update") {
-        trace!("Importing");
+        trace!("Importing...");
         app.import_data(update_dir.to_string())?;
         info!("Done");
     } else if matches.is_present("path") {
         println!("{}", db_file);
+    } else if matches.is_present("clear") {
+        std::fs::remove_file(Path::new(&db_file))?;
     } else {
         let mut ui = Ui::new(app);
 
