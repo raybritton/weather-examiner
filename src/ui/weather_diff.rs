@@ -1,17 +1,7 @@
 use crate::app::WeatherApp;
 use crate::Error;
-use std::io::{stdout, Write};
-use crossterm::{ExecutableCommand, QueueableCommand};
-use crossterm::style::{SetForegroundColor, Print, Color, SetAttribute, Attribute, SetBackgroundColor};
-use crossterm::event::KeyCode;
+use crossterm::style::Color;
 use crate::ui::ui_section::UiSection;
-use crate::ui::utils::{print_styled, print_first_last_reading, print_styled_list};
-use std::convert::TryInto;
-use chrono::{NaiveDateTime, Datelike, Timelike};
-use crate::extensions::{Utils, MapToUnit};
-use std::any::Any;
-use std::time::Duration;
-use std::iter::Iterator;
 
 const HEADER_COLOR: Color = Color::Cyan;
 
