@@ -53,6 +53,15 @@ pub fn print_first_last_reading(msg: &str, app: &mut WeatherApp) -> Result<(Weat
     return Ok((first, last));
 }
 
+pub fn print_row_titles(start: usize, end: usize, space_padding: usize, color: Color) -> Result<(), Error> {
+    let text = (start..=end).map(|num| format!("{: <2}{: <2$}", num, "", space_padding)).collect::<Vec<String>>().join("");
+    stdout()
+        .execute(SetForegroundColor(color))?
+        .execute(Print(format!("\n\n        {}", text)))?
+        .execute(SetForegroundColor(Color::White))?;
+    Ok(())
+}
+
 pub fn consume_all_input() -> Result<(), Error> {
     let duration = Duration::from_millis(10);
     while crossterm::event::poll(duration)? {
