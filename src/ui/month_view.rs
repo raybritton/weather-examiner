@@ -162,15 +162,15 @@ impl UiSection for MonthView {
                 self.print_amt_row(&daily_amts, 0, 11)?;
 
                 print_row_titles(12, 22, 11, HEADER_COLOR)?;
-                self.print_temp_row(&daily_temps, 12, 11)?;
-                self.print_prob_row(&daily_probs, 12, 11)?;
-                self.print_amt_row(&daily_amts, 12, 11)?;
+                self.print_temp_row(&daily_temps, 11, 11)?;
+                self.print_prob_row(&daily_probs, 11, 11)?;
+                self.print_amt_row(&daily_amts, 11, 11)?;
 
                 let count = (days_in_month - 22) as usize;
                 print_row_titles(23, days_in_month as usize, 11, HEADER_COLOR)?;
                 self.print_temp_row(&daily_temps, 22, count)?;
                 self.print_prob_row(&daily_probs, 22, count)?;
-                self.print_amt_row(&daily_amts, 22, 11)?;
+                self.print_amt_row(&daily_amts, 22, count)?;
 
                 print_styled("\n\n(▲) Previous month\n(▼) Next month\n(esc) Go back", Color::Grey, false)?;
 
