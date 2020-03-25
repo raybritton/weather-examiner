@@ -125,7 +125,7 @@ impl UiSection for MonthView {
 
                 readings.iter().map(|p| p.temp)
                     .collect::<Vec<f64>>()
-                    .chunks_exact(24)
+                    .chunks(24)
                     .for_each(|temps| {
                         daily_temps.push((
                             min_f64(temps),
@@ -136,7 +136,7 @@ impl UiSection for MonthView {
 
                 readings.iter().map(|p| (p.precip_probability * 100.) as usize)
                     .collect::<Vec<usize>>()
-                    .chunks_exact(24)
+                    .chunks(24)
                     .for_each(|probs| {
                         daily_probs.push((
                             min_usize(probs),
@@ -147,7 +147,7 @@ impl UiSection for MonthView {
 
                 readings.iter().map(|p| p.precip_intensity)
                     .collect::<Vec<f64>>()
-                    .chunks_exact(24)
+                    .chunks(24)
                     .for_each(|amts| {
                         daily_amts.push((
                             min_f64(amts),
