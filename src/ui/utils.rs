@@ -53,12 +53,30 @@ pub fn print_first_last_reading(msg: &str, app: &mut WeatherApp) -> Result<(Weat
     return Ok((first, last));
 }
 
-pub fn print_row_titles(start: usize, end: usize, space_padding: usize, color: Color) -> Result<(), Error> {
-    let text = (start..=end).map(|num| format!("{: <2}{: <2$}", num, "", space_padding)).collect::<Vec<String>>().join("");
+#[derive(Debug)]
+pub struct TitlesOpt {
+    pub start: usize,
+    pub end: usize,
+    pub newlines: usize,
+    pub initial_padding: usize,
+    pub between_padding: usize,
+    pub color: Color
+}
+
+pub fn print_row_titles(opts: TitlesOpt) -> Result<(), Error> {
+    let text = (opts.start..=opts.end).map(|num| format!("{: <2}{: <2$}", num, "", opts.between_padding)).collect::<Vec<String>>().join("");
     stdout()
-        .execute(SetForegroundColor(color))?
-        .execute(Print(format!("\n\n        {}", text)))?
+        .execute(SetForegroundColor(opts.color))?;
+
+    for _ in 0..opts.newlines {
+        stdout().execute(Print("\n"))?;
+    }
+
+    stdout()
+        .execute(Print(format!("{: <1$}", "", opts.initial_padding)))?
+        .execute(Print(format!("{}", text)))?
         .execute(SetForegroundColor(Color::White))?;
+
     Ok(())
 }
 

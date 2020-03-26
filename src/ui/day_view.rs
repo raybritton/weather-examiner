@@ -3,7 +3,7 @@ use crate::Error;
 use crate::app::WeatherApp;
 use chrono::NaiveDateTime;
 use crate::extensions::Utils;
-use crate::ui::utils::{print_styled, print_first_last_reading};
+use crate::ui::utils::{print_styled, print_first_last_reading, print_row_titles, TitlesOpt};
 use crossterm::style::{Color, SetBackgroundColor, Print};
 use std::io::stdout;
 use crossterm::ExecutableCommand;
@@ -129,8 +129,14 @@ impl UiSection for DayView {
 
                 let readings = app.get_readings_over_range(start, end)?;
 
-                let titles = (0..=23).map(|num| format!("{: <2}    ", num)).collect::<Vec<String>>().join("");
-                print_styled(&format!("\n\n        {}", titles), HEADER_COLOR, false)?;
+                print_row_titles(TitlesOpt {
+                    start: 0,
+                    end: 23,
+                    newlines: 2,
+                    initial_padding: 8,
+                    between_padding: 4,
+                    color: HEADER_COLOR
+                })?;
 
                 let temps: Vec<f64> = readings.iter().map(|p| p.temp).collect();
                 let probs: Vec<usize> = readings.iter().map(|p| (p.precip_probability * 100.) as usize).collect();

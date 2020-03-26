@@ -7,6 +7,7 @@ use crate::ui::import_data::ImportData;
 use crate::ui::missing_records::MissingRecords;
 use crate::ui::day_view::DayView;
 use crate::ui::month_view::MonthView;
+use crate::ui::weather_diff::WeatherDiff;
 
 pub struct MainMenu {
     reset_pos: (u16, u16)
@@ -29,11 +30,11 @@ impl UiSection for MainMenu {
             let menu_options = vec![
                 "Import data",
                 "Check for missing records",
-                "Reading for specific point",
+                "Reading for hour",
                 "Reading for day",
                 "Reading for month",
-                "Predictions for specific point",
-                // "Differences for specific point"
+                "Predictions for hour",
+                "Differences for hour",
             ];
 
             let input = self.menu(menu_options, true)?;
@@ -46,7 +47,7 @@ impl UiSection for MainMenu {
                 4 => DayView::new(self.reset_pos).run(app)?,
                 5 => MonthView::new(self.reset_pos).run(app)?,
                 6 => WeatherPredictions::new(self.reset_pos).run(app)?,
-                // 5 => WeatherDiff::new(self.reset_pos).run(app)?,
+                7 => WeatherDiff::new(self.reset_pos).run(app)?,
                 _ => {}
             }
         }

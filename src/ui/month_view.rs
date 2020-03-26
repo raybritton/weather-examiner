@@ -4,7 +4,7 @@ use crate::app::WeatherApp;
 use std::io::stdout;
 use crossterm::style::{SetBackgroundColor, Color, Print};
 use crossterm::ExecutableCommand;
-use crate::ui::utils::{print_first_last_reading, print_styled, print_row_titles};
+use crate::ui::utils::{print_first_last_reading, print_styled, print_row_titles, TitlesOpt};
 use chrono::{NaiveDateTime, Datelike, NaiveDate, NaiveTime, Timelike};
 use std::time::Duration;
 use crate::models::SimpleDate;
@@ -101,7 +101,7 @@ impl UiSection for MonthView {
                 let days_in_month = days_in_month(selected_date.month() as u8, selected_date.year() as u32);
 
                 let start: SimpleDate = selected_date.into();
-                let mut end = selected_date
+                let end = selected_date
                     .with_day(days_in_month as u32).expect("Invalid days_in_month")
                     .with_hour(23).unwrap()
                     .clone()
@@ -156,18 +156,39 @@ impl UiSection for MonthView {
                         ));
                     });
 
-                print_row_titles(1, 11, 11, HEADER_COLOR)?;
+                print_row_titles(TitlesOpt {
+                    start: 1,
+                    end: 11,
+                    newlines: 2,
+                    initial_padding: 8,
+                    between_padding: 11,
+                    color: HEADER_COLOR
+                })?;
                 self.print_temp_row(&daily_temps, 0, 11)?;
                 self.print_prob_row(&daily_probs, 0, 11)?;
                 self.print_amt_row(&daily_amts, 0, 11)?;
 
-                print_row_titles(12, 22, 11, HEADER_COLOR)?;
+                print_row_titles(TitlesOpt {
+                    start: 12,
+                    end: 22,
+                    newlines: 2,
+                    initial_padding: 8,
+                    between_padding: 11,
+                    color: HEADER_COLOR
+                })?;
                 self.print_temp_row(&daily_temps, 11, 11)?;
                 self.print_prob_row(&daily_probs, 11, 11)?;
                 self.print_amt_row(&daily_amts, 11, 11)?;
 
                 let count = (days_in_month - 22) as usize;
-                print_row_titles(23, days_in_month as usize, 11, HEADER_COLOR)?;
+                print_row_titles(TitlesOpt {
+                    start: 23,
+                    end: days_in_month as usize,
+                    newlines: 2,
+                    initial_padding: 8,
+                    between_padding: 11,
+                    color: HEADER_COLOR
+                })?;
                 self.print_temp_row(&daily_temps, 22, count)?;
                 self.print_prob_row(&daily_probs, 22, count)?;
                 self.print_amt_row(&daily_amts, 22, count)?;

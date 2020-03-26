@@ -5,7 +5,7 @@ use crossterm::ExecutableCommand;
 use crossterm::style::{Print, Color, SetBackgroundColor};
 use crossterm::event::KeyCode;
 use crate::ui::ui_section::UiSection;
-use crate::ui::utils::{print_styled, print_first_last_reading};
+use crate::ui::utils::{print_styled, print_first_last_reading, print_row_titles, TitlesOpt};
 use std::convert::TryInto;
 use chrono::{NaiveDateTime, Datelike, Timelike};
 use crate::extensions::Utils;
@@ -135,9 +135,6 @@ impl UiSection for WeatherPredictions {
 
                 print_styled(&format!("{}", selected_date.format("%a %Y-%m-%d %H:00")), Color::White, true)?;
 
-                let titles = (1..=23).map(|num| format!("{: <2}    ", num)).collect::<Vec<String>>().join("");
-                let titles2 = (24..=47).map(|num| format!("{: <2}    ", num)).collect::<Vec<String>>().join("");
-
                 let mut temps: Vec<f64> = reading.1.iter().map(|p| p.temp).collect();
                 temps.insert(0, reading.0.temp);
 
@@ -156,7 +153,15 @@ impl UiSection for WeatherPredictions {
                 let mut gusts: Vec<f64> = reading.1.iter().map(|p| p.wind_gust).collect();
                 gusts.insert(0, reading.0.wind_gust);
 
-                print_styled(&format!("\n\n        Time  {}", titles), HEADER_COLOR, false)?;
+                print_styled("\n\n        Time  ", HEADER_COLOR, false)?;
+                print_row_titles(TitlesOpt {
+                    start: 1,
+                    end: 23,
+                    newlines: 0,
+                    initial_padding: 0,
+                    between_padding: 4,
+                    color: HEADER_COLOR
+                })?;
                 self.print_temp_row(&temps, 0, 24)?;
                 self.print_prob_row(&probs, 0, 24)?;
                 self.print_amt_row(&amts, 0, 24)?;
@@ -164,7 +169,14 @@ impl UiSection for WeatherPredictions {
                 self.print_speed_row(&speeds, 0, 24)?;
                 self.print_gust_row(&gusts, 0, 24)?;
 
-                print_styled(&format!("\n\n        {}", titles2), HEADER_COLOR, false)?;
+                print_row_titles(TitlesOpt {
+                    start: 24,
+                    end: 47,
+                    newlines: 2,
+                    initial_padding: 8,
+                    between_padding: 4,
+                    color: HEADER_COLOR
+                })?;
                 self.print_temp_row(&temps, 24, 24)?;
                 self.print_prob_row(&probs, 24, 24)?;
                 self.print_amt_row(&amts, 24, 24)?;
