@@ -1,3 +1,9 @@
+## Deprecated
+
+Apple have purchased DarkSky and are closing the API
+
+https://blog.darksky.net/dark-sky-has-a-new-home/
+
 ## DarkSky weather prediction examiner
 
 ![Main](https://github.com/raybritton/weather-examiner/workflows/Main/badge.svg?branch=master)
